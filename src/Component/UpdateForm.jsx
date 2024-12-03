@@ -5,10 +5,13 @@ import "react-datepicker/dist/react-datepicker.css";
 import "react-time-picker/dist/TimePicker.css";
 import "react-clock/dist/Clock.css";
 import Swal from "sweetalert2";
+import { useLoaderData } from "react-router-dom";
 
-const AddSchedule = () => {
-  const [appointmentDate, setAppointmentDate] = useState(new Date());
-  const [appointmentTime, setAppointmentTime] = useState("10:00");
+const UpdateForm = () => {
+  const data = useLoaderData();
+
+  const [appointmentDate, setAppointmentDate] = useState(new Date(data.date));
+  const [appointmentTime, setAppointmentTime] = useState(data.time);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e) => {
@@ -21,7 +24,6 @@ const AddSchedule = () => {
       const email = e.target.email.value.trim();
       const reason = e.target.reason.value.trim();
 
-      // Validate fields
       if (
         !patientName ||
         !contactNumber ||
@@ -44,41 +46,38 @@ const AddSchedule = () => {
         contactNumber,
         email,
         reason,
-        date: appointmentDate,
+        date: appointmentDate.toISOString().split("T")[0],
         time: appointmentTime,
-        isCompleted: false,
       };
-      console.log(patientInfos);
 
       const response = await fetch(
-        `http://localhost:3333/patientsAppointmentForm`,
+        `http://localhost:3333/patientsAppointmentForm/update/${data._id}`,
         {
-          method: "POST",
+          method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(patientInfos),
         }
       );
 
       if (!response.ok) {
-        throw new Error("Failed to schedule the appointment.");
+        throw new Error("Failed to update the appointment.");
       }
-
-      await response.json();
 
       Swal.fire({
         position: "top-end",
         icon: "success",
-        title: "Appointment successfully scheduled!",
+        title: "Appointment successfully updated!",
         showConfirmButton: false,
         timer: 1500,
       });
+
+      setIsSubmitting(false);
     } catch (error) {
       Swal.fire({
         icon: "error",
         title: "Error",
-        text: error.message || "Unable to process your request. Please try again later.",
+        text: error.message || "Something went wrong. Please try again.",
       });
-    } finally {
       setIsSubmitting(false);
     }
   };
@@ -90,7 +89,7 @@ const AddSchedule = () => {
         className="bg-white p-6 rounded-lg shadow-lg w-full max-w-[500px]"
       >
         <h2 className="text-2xl font-semibold text-gray-800 text-center mb-6">
-          Schedule an Appointment
+          Update Appointment
         </h2>
 
         {/* Patient Name */}
@@ -105,6 +104,7 @@ const AddSchedule = () => {
             type="text"
             id="patientName"
             name="patientName"
+            defaultValue={data.patientName}
             placeholder="Enter your full name"
             className="w-full px-4 py-2 mt-2 bg-gray-100 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
             required
@@ -123,6 +123,7 @@ const AddSchedule = () => {
             type="tel"
             id="contactNumber"
             name="contactNumber"
+            defaultValue={data.contactNumber}
             placeholder="Enter your contact number"
             className="w-full px-4 py-2 mt-2 bg-gray-100 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
             required
@@ -138,6 +139,7 @@ const AddSchedule = () => {
             type="email"
             id="email"
             name="email"
+            defaultValue={data.email}
             placeholder="Enter your email address"
             className="w-full px-4 py-2 mt-2 bg-gray-100 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
             required
@@ -152,6 +154,7 @@ const AddSchedule = () => {
           <textarea
             id="reason"
             name="reason"
+            defaultValue={data.reason}
             placeholder="Describe your issue or reason for visit"
             rows="3"
             className="w-full px-4 py-2 mt-2 bg-gray-100 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
@@ -168,7 +171,7 @@ const AddSchedule = () => {
             selected={appointmentDate}
             onChange={(date) => setAppointmentDate(date)}
             dateFormat="yyyy-MM-dd"
-            minDate={new Date()} // Prevent past dates
+            minDate={new Date()}
             className="w-full px-4 py-2 mt-2 bg-gray-100 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
             required
           />
@@ -197,11 +200,11 @@ const AddSchedule = () => {
               : "bg-blue-500 hover:bg-blue-600"
           } text-white`}
         >
-          {isSubmitting ? "Scheduling..." : "Schedule Appointment"}
+          {isSubmitting ? "Updating..." : "Update Appointment"}
         </button>
       </form>
     </div>
   );
 };
 
-export default AddSchedule;
+export default UpdateForm;

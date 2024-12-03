@@ -4,6 +4,11 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import "./index.css";
 import Root from "./Component/Root";
 import Home from "./Component/Home";
+import AddSchedule from "./Component/AddSchedule";
+import AllSchedule from "./Component/AllSchedule";
+import SignIn from "./Component/SignIn";
+import SignUp from "./Component/SignUp";
+import UpdateForm from "./Component/UpdateForm";
 
 const router = createBrowserRouter([
   {
@@ -16,19 +21,26 @@ const router = createBrowserRouter([
       },
       {
         path: "/addSchedule",
-        element: <Home></Home>,
+        element: <AddSchedule></AddSchedule>,
       },
       {
         path: "/allSchedule",
-        element: <Home></Home>,
+        loader: () => fetch("http://localhost:3333/patientsAppointmentForm"),
+        element: <AllSchedule></AllSchedule>,
+      },
+      {
+        path: "/updateForm/:_id",
+        loader: ({ params }) =>
+          fetch(`http://localhost:3333/patientsAppointmentForm/${params._id}`),
+        element: <UpdateForm></UpdateForm>,
       },
       {
         path: "/signIn",
-        element: <Home></Home>,
+        element: <SignIn></SignIn>,
       },
       {
         path: "/singUp",
-        element: <Home></Home>,
+        element: <SignUp></SignUp>,
       },
     ],
   },
